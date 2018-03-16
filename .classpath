@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/antlr4-runtime-4.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/commons-lang3-3.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgraph-5.13.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-core-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-demo-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-ext-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-ext-1.1.0-uber.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-io-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgrapht-io-1.1.0-uber.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/jgrapht-1.1.0/jgrapht-1.1.0/lib/jgraphx-2.0.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/commons-math3-3.6.1-bin/commons-math3-3.6.1/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

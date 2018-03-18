@@ -132,10 +132,10 @@ public class test {
 			{
 				file.write("0,".getBytes());
 			}
-			else if(q>=361&&q<=600)//在这里先对数据滑动平均滤波，再用插值法
+			else if(q>=361&&q<=700)//在这里先对数据滑动平均滤波，再用插值法
 			{
 				float sum = 0;
-				if(q<=380)
+				if(q<=459)
 				{
 					sum = (float)Double.parseDouble(y1.get(q))*50;
 					System.out.println(String.valueOf(q)+":"+(String.valueOf(sum)+","));
@@ -143,6 +143,24 @@ public class test {
 				}
 				else
 				{
+					//先认为从310开始拟合
+					Vector<Double> x = new Vector<Double>();
+					Vector<Double> y = new Vector<Double>();
+					for(int c=310;c<=q-50;c++)
+					{
+						x.add((double)c-310);
+						double s = 0;
+						for(int l=c;l<=c+49;l++)
+						{
+							s = s+Double.parseDouble(y1.get(l-1));
+						}
+						y.add(s);
+					}
+					double[] xishu = polyfit(5,x,y);//先暂定为2次拟合
+					double result = poly(5,xishu,q-310);
+					System.out.println(String.valueOf(q)+":"+(String.valueOf(result)+","));
+					file.write((String.valueOf(result)+",").getBytes());
+					/*
 					Vector<Double> x = new Vector<Double>();
 					Vector<Double> y = new Vector<Double>();
 					//Vector<Double> x2 = new Vector<Double>();
@@ -171,10 +189,12 @@ public class test {
 		        	}
 		        	
 					System.out.println(String.valueOf(q)+":"+(String.valueOf(n)+","));
+					
 					file.write((String.valueOf(n)+",").getBytes());
+				*/
 				}
 			}
-			else if(q>600&&q<=720)
+			else if(q>700&&q<=720)
 			{
 				//先滤波
 				Vector<Double> x3 = new Vector<Double>();
@@ -182,9 +202,6 @@ public class test {
 				
 				for(int i=360;i<=q;i=i+5)
 				{
-					
-					
-					
 					x3.add(Double.parseDouble(x1.get(i))-360+2);
 					
 					double r = 0;

@@ -22,6 +22,8 @@ import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -49,7 +51,23 @@ public class test {
 		double r = -((Math.pow(x-mu,2))/(2*Math.pow(delta,2)));
     	return xishu*(float) (Math.pow(Math.E,r)/(Math.pow(2*Math.PI, 0.5)*delta));
 	}
-
+	
+	static Vector<Double> slide_nd(Vector<Double> y)
+	{
+		Vector<Double> result_y = new Vector<Double>();
+		//先暂定滑动系数为3
+		for(int i=0;i<y.size()-3;i++)
+		{
+			double sum = 0;
+			for(int j=i;j<i+4;j++)
+			{
+				sum = y.get(j)+sum;
+			}
+			result_y.add(sum/4);
+		}
+		return result_y;
+	}
+	
 	static double[] polyfit(int degree,Vector<Double> x,Vector<Double> y)
 	{
 		PolynomialCurveFitter polynomialCurveFitter = PolynomialCurveFitter.create(degree);
@@ -83,19 +101,21 @@ public class test {
 	public static void main(String[] args) throws IOException
     {
 		
-		File filex = new File("a");
-		File filey = new File("b");
+		File filex = new File("x");
+		File filey = new File("y");
 		FileOutputStream file =new FileOutputStream(new File("data.txt"));
 		Vector<String> x1 = new Vector<String>();
 		Vector<String> y1 = new Vector<String>();
 		read_from_file(filex,x1);
 		read_from_file(filey,y1);
-		
+		double mu = 0;
+		double delta = 0;
 		int j=0;
 		while(j<=y1.size()-1)
 		{
 			if(Float.parseFloat(y1.get(j))<0)
 			{
+				System.out.println("error!");
 				y1.remove(j);
 				x1.remove(j);
 			}
@@ -104,49 +124,132 @@ public class test {
 				j++;
 			}
 		}
-		//System.out.println(x1.size());
-		//System.out.println(y1.size());
 		
-		for(int q=30;q<=300;q=q+10)
+		for(int q=1;q<=1440;q++)
 		{
-			if(q<=200)//在q<200之前用多项式拟合
+			
+			if(q<=360)
 			{
-				Vector<Double> x = new Vector<Double>();
-				Vector<Double> y = new Vector<Double>();
-				for(int k=0;k<q;k=k+5)
-				{
-					x.add(Double.parseDouble(x1.get(k)));
-					y.add(Double.parseDouble(y1.get(k)));
-				}
-				double[] xishu = polyfit(4,x,y);
-				float n = poly(4,xishu,q);
-				file.write((String.valueOf(n)+",").getBytes());
+				file.write("0,".getBytes());
 			}
-			else
+			else if(q>=361&&q<=600)//在这里先对数据滑动平均滤波，再用插值法
 			{
+				float sum = 0;
+				if(q<=380)
+				{
+					sum = (float)Double.parseDouble(y1.get(q))*50;
+					System.out.println(String.valueOf(q)+":"+(String.valueOf(sum)+","));
+					file.write((String.valueOf(sum)+",").getBytes());
+				}
+				else
+				{
+					Vector<Double> x = new Vector<Double>();
+					Vector<Double> y = new Vector<Double>();
+					//Vector<Double> x2 = new Vector<Double>();
+					
+					for(int i=360;i<=q;i++)
+					{
+						x.add(Double.parseDouble(x1.get(i))-360);
+						y.add(Double.parseDouble(y1.get(i)));
+					}
+					x.remove(0);
+					x.remove(x.size()-1);
+					x.remove(x.size()-1);
+					Vector<Double> y2 = slide_nd(y);
+					
+					
+					double[] xishu = polyfit(1,x,y2);
+					
+					float n = 0;
+		        	for(int i1 = q;i1<=q+49;i1++)
+		        	{
+		        		float v = poly(1,xishu,i1-360);
+		        		if(v>0)
+		        		{
+		        			n = n+v;
+		        		}
+		        	}
+		        	
+					System.out.println(String.valueOf(q)+":"+(String.valueOf(n)+","));
+					file.write((String.valueOf(n)+",").getBytes());
+				}
+			}
+			else if(q>600&&q<=720)
+			{
+				//先滤波
+				Vector<Double> x3 = new Vector<Double>();
+				Vector<Double> y3 = new Vector<Double>();
+				
+				for(int i=360;i<=q;i=i+5)
+				{
+					
+					
+					
+					x3.add(Double.parseDouble(x1.get(i))-360+2);
+					
+					double r = 0;
+					for(int b = 0;b<5;b++)
+					{
+						r = r+Double.parseDouble(y1.get(i+b));
+					}
+					r = r/5;
+					
+					y3.add(r);
+				}
+				
+				Vector<Double> y4 = slide_nd(y3);
+				x3.remove(0);
+				x3.remove(x3.size()-1);
+				x3.remove(x3.size()-1);
+				
 				WeightedObservedPoints obs = new WeightedObservedPoints();
-	        	for(int i=0;i<q;i=i+10)
+	        	for(int j1=0;j1<x3.size();j1++)
 	        	{
-	        		obs.add(Double.parseDouble(x1.get(i)),Double.parseDouble(y1.get(i)));
+	        		obs.add(x3.get(j1),y4.get(j1));
 	        	}
 	        	double[] parameters = GaussianCurveFitter.create().fit(obs.toList());
-	        	//System.out.println(q/10+":");
-	        	float c = normpdf((float)q,parameters[1],parameters[2],10000);
-	        	file.write((String.valueOf(c)+",").getBytes());
-	        	if(q==300)
+	        	//float c = normpdf((float)q,parameters[1],parameters[2],10000);
+	        	float sum = 0;
+	        	for(int i1 = q;i1<=q+49;i1++)
 	        	{
-	        		for(int g=310;g<600;g=g+10)
-	        		{
-	        			float n = normpdf((float)g,parameters[1],parameters[2],10000);
-	                	file.write((String.valueOf(n)+",").getBytes());
-	        		}
+	        		sum = sum+normpdf((float)(i1-360),parameters[1],parameters[2],10000);
+	        	}
+	        	
+	        	System.out.println(String.valueOf(q)+":"+(String.valueOf(sum)+","));
+	        	file.write((String.valueOf(sum)+",").getBytes());
+	        	if(q==720)
+	        	{
+	        		/*System.out.println(parameters[1]);
+	        		System.out.println(parameters[2]);*/
+	        		mu = parameters[1];
+	        		delta = parameters[2];
 	        	}
 			}
-			
-        	//System.out.print("\n");
+			else if(q>=721 && q<=1080)
+			{
+				float sum = 0;
+				for(int i1 = q;i1<=q+49;i1++)
+	        	{
+	        		sum = sum+normpdf((float)(i1-360),(double)mu,(double)delta,10000);
+	        	}
+				System.out.println(String.valueOf(q)+":"+(String.valueOf(sum)+","));
+	        	file.write((String.valueOf(sum)+",").getBytes());
+			}
+			else 
+			{
+				if(q!=1440)
+				{
+					file.write("0,".getBytes());
+				}
+				else
+				{
+					file.write("0".getBytes());
+				}
+			}
 		}
         
         
+        file.close();
     }
 	
 	
